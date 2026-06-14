@@ -1,0 +1,65 @@
+name: Daily /news gallery
+
+on:
+  schedule:
+    - cron: "0 9 * * *"   # ~11:00 Europe/Rome (finestra di veto prima delle 12:00)
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Forza anche se l'articolo e' gia stato pubblicato"
+        type: boolean
+        default: false
+      dry_run:
+        description: "Non pubblica su Metricool (solo render + email)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write   # per committare out/ e state.json
+
+concurrency:
+  group: daily-news
+  cancel-in-progress: false
+
+jobs:
+  gallery:
+    runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      METRICOOL_USER_TOKEN: ${{ secrets.METRICOOL_USER_TOKEN }}
+      METRICOOL_USER_ID: ${{ secrets.METRICOOL_USER_ID }}
+      METRICOOL_BLOG_ID: ${{ secrets.METRICOOL_BLOG_ID }}
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASS: ${{ secrets.SMTP_PASS }}
+      SMTP_TO: ${{ secrets.SMTP_TO }}
+      PROVIDERS: "linkedin,facebook"
+      PUBLISH_TZ: "Europe/Rome"
+      PUBLISH_HOUR: "12:00:00"
+      RAW_BASE: "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/out"
+      FORCE: ${{ (github.event_name == 'workflow_dispatch' && inputs.force) && '1' || '0' }}
+      DRY_RUN: ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) && '1' || '0' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r requirements.txt
+
+      - name: Render gallery
+        run: python src/run.py render
+
+      - name: Commit images (per URL pubblici)
+        run: |
+          git config user.name "news-gallery-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add out/ || true
+          git commit -m "gallery $(date -u +%F)" || echo "niente da committare"
+          git push || true
+
+      - name: Publish + notify
+        run: python src/run.py publish
+
+      - name: Persist state
+        run: |
+          git add state.json out/manifest.json || true
+          git commit -m "state $(date -u +%F)" || echo "niente da committare"
+          git push || true
