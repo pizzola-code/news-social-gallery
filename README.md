@@ -19,8 +19,8 @@ Orchestratore: `src/run.py render` poi `src/run.py publish`. Anti-duplicati via 
 |---|---|
 | `GEMINI_API_KEY` | chiave Google Gemini (free, da aistudio.google.com) |
 | `METRICOOL_USER_TOKEN` | token API Metricool |
-| `METRICOOL_USER_ID` | `4929668` |
-| `METRICOOL_BLOG_ID` | `6398616` (brand Gruppo Spaggiari Parma) |
+| `METRICOOL_USER_ID` | user id Metricool |
+| `METRICOOL_BLOG_ID` | blog id del brand Metricool |
 | `SMTP_USER` | utente Office365 (es. pizzola@spaggiari.eu) |
 | `SMTP_PASS` | app password Office365 |
 | `SMTP_TO` | destinatari anteprima (csv) |
