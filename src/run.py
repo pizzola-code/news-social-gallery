@@ -47,12 +47,15 @@ def do_publish():
     when_iso = f"{today}T{hour}"
     art = {"url": m["url"], "title": m["title"], "image": m.get("image","")}
     text = publish.build_text(m["caption"], m["url"], m.get("hashtags", []))
-    dry = os.environ.get("DRY_RUN") == "1"
-    if dry:
-        print("DRY_RUN: salterei la pubblicazione. URLs:"); [print(" ", u) for u in urls]; resp = {"dry": True}
-    else:
+    mode = os.environ.get("PUBLISH_MODE", "draft")  # dry | draft | auto
+    if mode == "dry":
+        print("DRY: nessuna chiamata. URLs:"); [print(" ", u) for u in urls]; resp = {"dry": True}
+    elif mode == "auto":
         resp = publish.schedule(urls, text, when_iso, autopublish=True, draft=False)
-        print("Metricool:", json.dumps(resp)[:300])
+        print("Metricool AUTO (pubblica alle", when_iso, "):", json.dumps(resp)[:200])
+    else:  # draft
+        resp = publish.schedule(urls, text, when_iso, autopublish=False, draft=True)
+        print("Metricool BOZZA creata:", json.dumps(resp)[:200])
     try:
         notify.send_preview(f"[/news] Pubblicazione {today} alle {hour[:5]} — anteprima",
                             art, m, urls, f"{today} {hour[:5]}")

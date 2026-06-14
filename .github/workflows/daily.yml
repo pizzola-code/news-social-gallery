@@ -9,10 +9,11 @@ on:
         description: "Forza anche se l'articolo e' gia stato pubblicato"
         type: boolean
         default: false
-      dry_run:
-        description: "Non pubblica su Metricool (solo render + email)"
-        type: boolean
-        default: false
+      mode:
+        description: "draft = crea bozza (default) | auto = pubblica alle 12 | dry = solo render"
+        type: choice
+        options: [draft, auto, dry]
+        default: draft
 
 permissions:
   contents: write   # per committare out/ e state.json
@@ -37,7 +38,7 @@ jobs:
       PUBLISH_HOUR: "12:00:00"
       RAW_BASE: "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/out"
       FORCE: ${{ (github.event_name == 'workflow_dispatch' && inputs.force) && '1' || '0' }}
-      DRY_RUN: ${{ (github.event_name == 'workflow_dispatch' && inputs.dry_run) && '1' || '0' }}
+      PUBLISH_MODE: ${{ (github.event_name == 'workflow_dispatch' && inputs.mode) || 'draft' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

@@ -28,9 +28,16 @@ Orchestratore: `src/run.py render` poi `src/run.py publish`. Anti-duplicati via 
 ## Libreria sfondi (bouquet)
 Generata UNA volta con Higgsfield (navy+ciano, icona a tema, senza testo). Temi: `maturita, normativa, scadenze, iscrizioni, didattica, orientamento` (2 varianti `_a`/`_b`). Per rinfrescare il look basta rigenerarli; il giro quotidiano NON usa Higgsfield.
 
+## Modalita di pubblicazione (`PUBLISH_MODE`)
+- `draft` (default) — crea una BOZZA su Metricool, da approvare a mano. Sicuro.
+- `auto` — schedula e pubblica alle 12:00 (finestra di veto = cancellare in Metricool).
+- `dry` — solo render, nessuna chiamata a Metricool.
+
+Run manuale: Actions → *Daily /news gallery* → Run workflow → scegli `mode`.
+
 ## Test locale
 ```
 pip install -r requirements.txt
-DRY_RUN=1 python src/run.py render
-DRY_RUN=1 RAW_BASE=https://example.com python src/run.py publish
+GEMINI_API_KEY=... FORCE=1 python src/run.py render
+PUBLISH_MODE=dry RAW_BASE=https://example.com python src/run.py publish
 ```
