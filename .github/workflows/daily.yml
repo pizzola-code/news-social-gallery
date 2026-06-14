@@ -25,7 +25,7 @@ jobs:
   gallery:
     runs-on: ubuntu-latest
     env:
-      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       METRICOOL_USER_TOKEN: ${{ secrets.METRICOOL_USER_TOKEN }}
       METRICOOL_USER_ID: ${{ secrets.METRICOOL_USER_ID }}
       METRICOOL_BLOG_ID: ${{ secrets.METRICOOL_BLOG_ID }}

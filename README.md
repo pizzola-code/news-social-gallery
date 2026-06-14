@@ -4,7 +4,7 @@ Pipeline automatica: ogni giorno legge l'ultimo articolo di **spaggiari.eu/news*
 
 ## Come funziona
 1. `src/fetch_latest.py` — trova l'ultimo articolo (URL, titolo, descrizione, copertina).
-2. `src/extract.py` — Anthropic estrae intro social + 5 card + tema (solo fatti dell'articolo).
+2. `src/extract.py` — Google Gemini estrae intro social + 5 card + tema (solo fatti dell'articolo).
 3. `src/render.py` — compone 5 PNG 1080x1080: testo esatto via Pillow (font Playfair/Lexend), **logo nel footer**, sfondo dalla **libreria a tema** (`assets/bg-library/`), la cover usa l'immagine dell'articolo se presente.
 4. `src/publish.py` — schedula il carosello su Metricool (API ufficiale).
 5. `src/notify.py` — email di anteprima (SMTP Office365). **Veto = cancellare il post in Metricool prima delle 12:00.**
@@ -17,7 +17,7 @@ Orchestratore: `src/run.py render` poi `src/run.py publish`. Anti-duplicati via 
 ## Secrets richiesti (Settings → Secrets → Actions)
 | Secret | Valore |
 |---|---|
-| `ANTHROPIC_API_KEY` | chiave Anthropic |
+| `GEMINI_API_KEY` | chiave Google Gemini (free, da aistudio.google.com) |
 | `METRICOOL_USER_TOKEN` | token API Metricool |
 | `METRICOOL_USER_ID` | `4929668` |
 | `METRICOOL_BLOG_ID` | `6398616` (brand Gruppo Spaggiari Parma) |

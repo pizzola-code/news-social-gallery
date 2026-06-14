@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 """Estrae da un articolo /news il contenuto della gallery (intro social + 5 card)
-usando Anthropic. Restituisce un dict strutturato e VALIDATO.
+usando Google Gemini (free tier). Restituisce un dict strutturato e VALIDATO.
 
-Regola d'oro brand: NIENTE numeri/fatti inventati, solo ci� che � nell'articolo.
-Niente claim di conformit�. 'Gruppo Spaggiari' senza articolo. Sigla FSL (mai PCTO)."""
+Regola d'oro brand: NIENTE numeri/fatti inventati, solo cio' che e' nell'articolo.
+Niente claim di conformita'. 'Gruppo Spaggiari' senza articolo. Sigla FSL (mai PCTO)."""
 import json, os, re
-import anthropic
+import google.generativeai as genai
 
-MODEL = os.environ.get("EXTRACT_MODEL", "claude-sonnet-4-6")
+MODEL = os.environ.get("EXTRACT_MODEL", "gemini-2.0-flash")
 THEMES = ["maturita", "normativa", "scadenze", "iscrizioni", "didattica", "orientamento"]
 
 SCHEMA_HINT = """Rispondi SOLO con un oggetto JSON valido (nessun testo fuori dal JSON) con questa forma:
 {
   "theme": "uno tra: maturita | normativa | scadenze | iscrizioni | didattica | orientamento",
-  "caption": "intro per il post social, 2-3 frasi, tono istituzionale ma chiaro, SENZA hashtag finali qui",
+  "caption": "intro per il post social, 2-3 frasi, tono istituzionale ma chiaro, SENZA hashtag qui",
   "hashtags": ["#...", "#..."],
   "cover":  {"eyebrow": "OCCHIELLO BREVE", "title": "titolo forte (max ~6 parole)", "hi": "frase gancio breve con il dato chiave"},
   "cards": [
@@ -24,7 +24,10 @@ SCHEMA_HINT = """Rispondi SOLO con un oggetto JSON valido (nessun testo fuori da
   "cta": {"eyebrow": "IN SINTESI", "title": "frase di chiusura forte", "body": "1 frase"}
 }
 Vincoli: italiano corretto con accenti; usa SOLO numeri/fatti presenti nell'articolo (non inventarli);
-i titoli possono contenere i numeri chiave; niente claim di conformit� normativa; 'Gruppo Spaggiari' senza articolo."""
+i titoli possono contenere i numeri chiave; niente claim di conformita' normativa; 'Gruppo Spaggiari' senza articolo."""
+
+SYSTEM = ("Sei l'editor social di Gruppo Spaggiari (editoria scolastica). "
+          "Sintetizzi articoli /news in caroselli precisi e on-brand, in italiano.")
 
 def _coerce(d):
     assert d.get("theme") in THEMES, f"theme non valido: {d.get('theme')}"
@@ -34,15 +37,13 @@ def _coerce(d):
     return d
 
 def extract(article: dict) -> dict:
-    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+    genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+    model = genai.GenerativeModel(MODEL, system_instruction=SYSTEM)
     user = (f"TITOLO: {article['title']}\nDESCRIZIONE: {article['description']}\n"
             f"URL: {article['url']}\n\nTESTO ARTICOLO:\n{article['content_text']}\n\n{SCHEMA_HINT}")
-    msg = client.messages.create(
-        model=MODEL, max_tokens=1500, temperature=0.3,
-        system="Sei l'editor social di Gruppo Spaggiari (editoria scolastica). Sintetizzi articoli /news in caroselli precisi e on-brand.",
-        messages=[{"role": "user", "content": user}],
-    )
-    txt = "".join(b.text for b in msg.content if getattr(b, "type", "") == "text")
+    resp = model.generate_content(user, generation_config={
+        "temperature": 0.3, "max_output_tokens": 1600, "response_mime_type": "application/json"})
+    txt = resp.text
     m = re.search(r"\{.*\}", txt, re.S)
     if not m: raise RuntimeError("Nessun JSON nella risposta del modello")
     return _coerce(json.loads(m.group(0)))
