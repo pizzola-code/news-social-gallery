@@ -38,7 +38,7 @@ jobs:
       PUBLISH_HOUR: "12:00:00"
       RAW_BASE: "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/out"
       FORCE: ${{ (github.event_name == 'workflow_dispatch' && inputs.force) && '1' || '0' }}
-      PUBLISH_MODE: ${{ (github.event_name == 'workflow_dispatch' && inputs.mode) || 'draft' }}
+      PUBLISH_MODE: ${{ (github.event_name == 'workflow_dispatch' && inputs.mode) || 'auto' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
