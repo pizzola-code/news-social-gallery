@@ -8,21 +8,25 @@ TOKEN = os.environ.get("METRICOOL_USER_TOKEN", "")
 USER_ID = os.environ.get("METRICOOL_USER_ID", "")
 BLOG_ID = os.environ.get("METRICOOL_BLOG_ID", "")
 TZ = os.environ.get("PUBLISH_TZ", "Europe/Rome")
-PROVIDERS = [p.strip() for p in os.environ.get("PROVIDERS", "linkedin,facebook").split(",") if p.strip()]
 
-def schedule(image_urls, text, when_iso, autopublish=True, draft=False):
-    """when_iso: 'YYYY-MM-DDTHH:MM:SS' (ora locale TZ). Ritorna la risposta API (dict)."""
-    providers, ndata = [], {}
-    for net in PROVIDERS:
-        providers.append({"network": net})
+def schedule(image_urls, text, when_iso, providers=None, autopublish=True, draft=False):
+    """when_iso: 'YYYY-MM-DDTHH:MM:SS' (ora locale TZ). Ritorna la risposta API (dict).
+    providers: lista di network (es. ['linkedin','facebook'] o ['gmb']); default da env PROVIDERS."""
+    if providers is None:
+        providers = [p.strip() for p in os.environ.get("PROVIDERS", "linkedin,facebook").split(",") if p.strip()]
+    prov, ndata = [], {}
+    for net in providers:
+        prov.append({"network": net})
         if net == "linkedin":
             ndata["linkedinData"] = {"type": "post", "previewIncluded": False, "publishImagesAsPDF": False}
         elif net == "facebook":
             ndata["facebookData"] = {"type": "POST"}
+        elif net == "gmb":
+            ndata["gmbData"] = {"topicType": "STANDARD"}
     body = {
         "autoPublish": bool(autopublish),
         "draft": bool(draft),
-        "providers": providers,
+        "providers": prov,
         "publicationDate": {"dateTime": when_iso, "timezone": TZ},
         "text": text,
         "media": list(image_urls),

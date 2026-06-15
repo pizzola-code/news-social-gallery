@@ -6,7 +6,7 @@ Pipeline automatica: ogni giorno legge l'ultimo articolo di **spaggiari.eu/news*
 1. `src/fetch_latest.py` — trova l'ultimo articolo (URL, titolo, descrizione, copertina).
 2. `src/extract.py` — Google Gemini estrae intro social + 5 card + tema (solo fatti dell'articolo).
 3. `src/render.py` — compone 5 PNG 1080x1080: testo esatto via Pillow (font Playfair/Lexend), **logo nel footer**, sfondo dalla **libreria a tema** (`assets/bg-library/`), la cover usa l'immagine dell'articolo se presente.
-4. `src/publish.py` — schedula il carosello su Metricool (API ufficiale).
+4. `src/publish.py` — schedula su Metricool: **carosello 5 card** su LinkedIn+Facebook + **post a immagine singola (cover)** su Google Business (`PUBLISH_GMB=1`, GMB non supporta caroselli).
 5. `src/notify.py` — email di anteprima (SMTP Office365). **Veto = cancellare il post in Metricool prima delle 12:00.**
 
 Orchestratore: `src/run.py render` poi `src/run.py publish`. Anti-duplicati via `state.json`.

@@ -48,20 +48,25 @@ def do_publish():
     art = {"url": m["url"], "title": m["title"], "image": m.get("image","")}
     text = publish.build_text(m["caption"], m["url"], m.get("hashtags", []))
     mode = os.environ.get("PUBLISH_MODE", "draft")  # dry | draft | auto
+    carousel = [p.strip() for p in os.environ.get("PROVIDERS", "linkedin,facebook").split(",") if p.strip()]
+    # target: (providers, immagini). GMB = post separato a IMMAGINE SINGOLA (cover).
+    targets = [(carousel, urls)]
+    if os.environ.get("PUBLISH_GMB", "1") == "1":
+        targets.append((["gmb"], urls[:1]))
     if mode == "dry":
-        print("DRY: nessuna chiamata. URLs:"); [print(" ", u) for u in urls]; resp = {"dry": True}
-    elif mode == "auto":
-        resp = publish.schedule(urls, text, when_iso, autopublish=True, draft=False)
-        print("Metricool AUTO (pubblica alle", when_iso, "):", json.dumps(resp)[:200])
-    else:  # draft
-        resp = publish.schedule(urls, text, when_iso, autopublish=False, draft=True)
-        print("Metricool BOZZA creata:", json.dumps(resp)[:200])
-    try:
-        notify.send_preview(f"[/news] Pubblicazione {today} alle {hour[:5]} — anteprima",
-                            art, m, urls, f"{today} {hour[:5]}")
-        print("Email anteprima inviata.")
-    except Exception as e:
-        print("ATTENZIONE: email non inviata:", e)
+        for prov, u in targets: print("DRY:", "+".join(prov), "->", len(u), "img")
+    else:
+        ap, dr = (mode == "auto"), (mode != "auto")  # auto=pubblica, draft=bozza
+        for prov, u in targets:
+            r = publish.schedule(u, text, when_iso, providers=prov, autopublish=ap, draft=dr)
+            print(f"Metricool [{'+'.join(prov)}] {mode}:", json.dumps(r)[:160])
+    if os.environ.get("SMTP_USER"):  # notifiche disattivate se SMTP non configurato
+        try:
+            notify.send_preview(f"[/news] Pubblicazione {today} alle {hour[:5]} — anteprima",
+                                art, m, urls, f"{today} {hour[:5]}")
+            print("Email anteprima inviata.")
+        except Exception as e:
+            print("ATTENZIONE: email non inviata:", e)
     _save(STATE, {"last_url": m["url"], "last_date": today})
     print("PUBLISH ok.")
 
