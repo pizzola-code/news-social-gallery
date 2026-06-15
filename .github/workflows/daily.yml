@@ -35,6 +35,7 @@ jobs:
       SMTP_TO: ${{ secrets.SMTP_TO }}
       PROVIDERS: "linkedin,facebook"
       PUBLISH_GMB: "1"
+      PUBLISH_YT: "1"
       PUBLISH_TZ: "Europe/Rome"
       PUBLISH_HOUR: "12:00:00"
       RAW_BASE: "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.ref_name }}/out"

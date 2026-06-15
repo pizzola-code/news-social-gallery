@@ -9,9 +9,10 @@ USER_ID = os.environ.get("METRICOOL_USER_ID", "")
 BLOG_ID = os.environ.get("METRICOOL_BLOG_ID", "")
 TZ = os.environ.get("PUBLISH_TZ", "Europe/Rome")
 
-def schedule(image_urls, text, when_iso, providers=None, autopublish=True, draft=False):
+def schedule(image_urls, text, when_iso, providers=None, autopublish=True, draft=False, yt_title=None):
     """when_iso: 'YYYY-MM-DDTHH:MM:SS' (ora locale TZ). Ritorna la risposta API (dict).
-    providers: lista di network (es. ['linkedin','facebook'] o ['gmb']); default da env PROVIDERS."""
+    providers: lista di network (es. ['linkedin','facebook'], ['gmb'], ['youtube']); default da env PROVIDERS.
+    Per 'youtube' image_urls deve contenere l'URL del VIDEO e serve yt_title."""
     if providers is None:
         providers = [p.strip() for p in os.environ.get("PROVIDERS", "linkedin,facebook").split(",") if p.strip()]
     prov, ndata = [], {}
@@ -23,6 +24,9 @@ def schedule(image_urls, text, when_iso, providers=None, autopublish=True, draft
             ndata["facebookData"] = {"type": "POST"}
         elif net == "gmb":
             ndata["gmbData"] = {"topicType": "STANDARD"}
+        elif net == "youtube":
+            ndata["youtubeData"] = {"title": (yt_title or "Video")[:95], "type": "short",
+                                    "privacy": "public", "madeForKids": False, "tags": []}
     body = {
         "autoPublish": bool(autopublish),
         "draft": bool(draft),

@@ -20,7 +20,9 @@ def do_render():
     sys.path.insert(0, os.path.join(ROOT, "src"))
     import fetch_latest, extract, render
     os.makedirs(OUT, exist_ok=True)
-    for f in (SKIP, MANIFEST):
+    import glob as _g
+    for f in (_g.glob(os.path.join(OUT, "card_*.png")) + _g.glob(os.path.join(OUT, "short_*.mp4"))
+              + [SKIP, MANIFEST]):
         if os.path.exists(f): os.remove(f)
     art = fetch_latest.latest_article()
     last = _load(STATE, {}).get("last_url")
@@ -29,10 +31,19 @@ def do_render():
     content = extract.extract(art)
     datestr = datetime.datetime.now(TZ).strftime("%Y%m%d")
     paths = render.build_gallery(content, art, OUT, datestr)
+    video_file = ""
+    if os.environ.get("PUBLISH_YT", "1") == "1":
+        import video
+        vp = os.path.join(OUT, f"short_{datestr}.mp4")
+        try:
+            video.build_short(paths, vp); video_file = os.path.basename(vp)
+            print("Short YouTube creato:", video_file)
+        except Exception as e:
+            print("ATTENZIONE: Short non creato:", e)
     _save(MANIFEST, {"url": art["url"], "title": art["title"], "image": art.get("image",""),
                      "caption": content["caption"], "hashtags": content.get("hashtags", []),
                      "theme": content["theme"], "files": [os.path.basename(p) for p in paths],
-                     "date": datestr})
+                     "video": video_file, "date": datestr})
     print("RENDER ok:", len(paths), "card, tema", content["theme"])
 
 def do_publish():
@@ -53,13 +64,24 @@ def do_publish():
     targets = [(carousel, urls)]
     if os.environ.get("PUBLISH_GMB", "1") == "1":
         targets.append((["gmb"], urls[:1]))
+    # YouTube Short: post separato col VIDEO (se generato)
+    yt = None
+    if os.environ.get("PUBLISH_YT", "1") == "1" and m.get("video"):
+        import video
+        yt_url = f"{raw}/{m['video']}"
+        yt_text = text + "\n\n" + video.MUSIC_CREDIT
+        yt = (["youtube"], [yt_url], yt_text, m["title"])
     if mode == "dry":
         for prov, u in targets: print("DRY:", "+".join(prov), "->", len(u), "img")
+        if yt: print("DRY: youtube -> short", yt[1][0])
     else:
         ap, dr = (mode == "auto"), (mode != "auto")  # auto=pubblica, draft=bozza
         for prov, u in targets:
             r = publish.schedule(u, text, when_iso, providers=prov, autopublish=ap, draft=dr)
             print(f"Metricool [{'+'.join(prov)}] {mode}:", json.dumps(r)[:160])
+        if yt:
+            r = publish.schedule(yt[1], yt[2], when_iso, providers=yt[0], autopublish=ap, draft=dr, yt_title=yt[3])
+            print(f"Metricool [youtube] {mode}:", json.dumps(r)[:160])
     if os.environ.get("SMTP_USER"):  # notifiche disattivate se SMTP non configurato
         try:
             notify.send_preview(f"[/news] Pubblicazione {today} alle {hour[:5]} — anteprima",
