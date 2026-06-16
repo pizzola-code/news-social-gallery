@@ -2,7 +2,7 @@ name: Daily /news gallery
 
 on:
   schedule:
-    - cron: "0 9 * * *"   # ~11:00 Europe/Rome (finestra di veto prima delle 12:00)
+    - cron: "0 8 * * *"   # 10:00 Europe/Rome; se GitHub ritarda il cron, l'orario di publish si auto-aggiusta
   workflow_dispatch:
     inputs:
       force:

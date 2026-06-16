@@ -54,8 +54,12 @@ def do_publish():
     raw = os.environ["RAW_BASE"].rstrip("/")
     urls = [f"{raw}/{f}" for f in m["files"]]
     hour = os.environ.get("PUBLISH_HOUR", "12:00:00")
-    today = datetime.datetime.now(TZ).strftime("%Y-%m-%d")
-    when_iso = f"{today}T{hour}"
+    now = datetime.datetime.now(TZ)
+    today = now.strftime("%Y-%m-%d")
+    target = datetime.datetime.strptime(f"{today}T{hour}", "%Y-%m-%dT%H:%M:%S").replace(tzinfo=TZ)
+    if target <= now + datetime.timedelta(minutes=5):  # mezzogiorno gia passato (cron in ritardo) -> pubblica a breve
+        target = now + datetime.timedelta(minutes=15)
+    when_iso = target.strftime("%Y-%m-%dT%H:%M:%S")
     art = {"url": m["url"], "title": m["title"], "image": m.get("image","")}
     text = publish.build_text(m["caption"], m["url"], m.get("hashtags", []))
     mode = os.environ.get("PUBLISH_MODE", "draft")  # dry | draft | auto
