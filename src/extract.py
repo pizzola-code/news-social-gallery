@@ -3,7 +3,7 @@
 usando Google Gemini (SDK google-genai, free tier). Dict strutturato e VALIDATO.
 
 Regola d'oro brand: NIENTE numeri/fatti inventati, solo cio' che e' nell'articolo.
-Niente claim di conformita'. 'Gruppo Spaggiari' senza articolo. Sigla FSL (mai PCTO)."""
+Niente claim di conformita'. Marchio 'Spaggiari' (ragione sociale 'Gruppo Spaggiari Parma S.p.A.' solo in note legali). Sigla FSL (mai PCTO)."""
 import json, os, re
 from google import genai
 from google.genai import types
@@ -25,9 +25,9 @@ SCHEMA_HINT = """Rispondi SOLO con un oggetto JSON valido (nessun testo fuori da
   "cta": {"eyebrow": "IN SINTESI", "title": "frase di chiusura forte", "body": "1 frase"}
 }
 Vincoli: italiano corretto con accenti; usa SOLO numeri/fatti presenti nell'articolo (non inventarli);
-i titoli possono contenere i numeri chiave; niente claim di conformita' normativa; 'Gruppo Spaggiari' senza articolo."""
+i titoli possono contenere i numeri chiave; niente claim di conformita' normativa; usa il marchio 'Spaggiari'."""
 
-SYSTEM = ("Sei l'editor social di Gruppo Spaggiari (editoria scolastica). "
+SYSTEM = ("Sei l'editor social di Spaggiari (editoria scolastica). "
           "Sintetizzi articoli /news in caroselli precisi e on-brand, in italiano.")
 
 def _coerce(d):
