@@ -14,7 +14,7 @@ LOGO = os.path.join(ASSETS, "logo-spaggiari-neg.png")
 PF = os.path.join(FONTS, "PlayfairDisplay.ttf")
 LX = os.path.join(FONTS, "LexendDeca.ttf")
 SZ, PAD = 1080, 96
-INK="#0E2A4D"; WHITE="#FFFFFF"; CYAN="#6fc2e7"; RED="#C8202B"; BODY="#D2DEEA"; FOOT="#8AA0B8"; LINE="#23456b"; DOT_OFF="#37597C"
+INK="#06484b"; WHITE="#FFFFFF"; CYAN="#93c8ca"; RED="#e56d4c"; GOLD="#e8b547"; BODY="#CDD9DB"; FOOT="#8AA0B8"; LINE="#0e5c60"; DOT_OFF="#2f6b6e"
 UA = {"User-Agent": "Mozilla/5.0 (compatible; SpaggiariNewsBot/1.0)"}
 
 _fc = {}
@@ -148,7 +148,7 @@ def build_gallery(content, article, outdir, datestr):
     y=block(d,cta.get("body",""),PAD,y,font(LX,38,"Regular"),BODY,SZ-2*PAD,lh=1.34)
     fb=font(LX,34,"SemiBold"); lbl="Leggi l'articolo completo"; bb=fb.getbbox(lbl)
     tw=d.textlength(lbl,font=fb); px,py=44,26; w=tw+2*px; hh=(bb[3]-bb[1])+2*py; yy=y+34
-    d.rounded_rectangle([PAD,yy,PAD+w,yy+hh],radius=12,fill=CYAN)
+    d.rounded_rectangle([PAD,yy,PAD+w,yy+hh],radius=12,fill=GOLD)
     d.text((PAD+px,yy+py-bb[1]),lbl,font=fb,fill=INK)
     d.text((PAD,yy+hh+18),"spaggiari.eu/news",font=font(LX,26,"Medium"),fill=CYAN)
     footer(img,d,5,total); img.save(p(5)); paths.append(p(5))
