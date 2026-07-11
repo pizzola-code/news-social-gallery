@@ -1,8 +1,6 @@
 name: Daily /news gallery
 
 on:
-  schedule:
-    - cron: "0 8 * * *"   # 10:00 Europe/Rome; se GitHub ritarda il cron, l'orario di publish si auto-aggiusta
   workflow_dispatch:
     inputs:
       force:
